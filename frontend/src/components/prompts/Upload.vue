@@ -71,8 +71,10 @@
                   ? $t('prompts.error')
                   : file.status === 'conflict'
                     ? $t('prompts.conflictsDetected')
-                    : (file.progress / 100) * file.size
-              " :unit="file.status === 'completed' || file.status === 'error' ? '' : 'bytes'" :max="file.size"
+                    : file.status === 'uploading' && file.scanning
+                      ? $t('prompts.scanning')
+                      : (file.progress / 100) * file.size
+              " :unit="file.status === 'completed' || file.status === 'error' || (file.status === 'uploading' && file.scanning) ? '' : 'bytes'" :max="file.size"
               :status="file.status" text-position="inside" size="20"
               :help-text="getHelpText(file)">
             </progress-bar>
@@ -82,7 +84,7 @@
           </div>
           <div class="file-actions">
             <button
-              v-if="file.status === 'uploading'"
+              v-if="file.status === 'uploading' && !file.scanning"
               type="button"
               @click="uploadManager.pause(file.id)"
               class="action"

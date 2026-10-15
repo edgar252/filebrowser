@@ -512,6 +512,7 @@ class UploadManager {
     this.activeUploads++;
     this.hadActiveUploads = true; // Mark that we've had active uploads
     upload.status = "uploading";
+    upload.scanning = false;
 
     // Default to 5 MB when unset; explicit 0 disables chunking (single-shot upload).
     const chunkSizeMb = state.user.fileLoading?.uploadChunkSizeMb ?? 5;
@@ -755,6 +756,13 @@ class UploadManager {
     upload.progress = progress;
     this.recordUploadActivity(upload);
     upload.connectionIssue = false; // Clear connection issue on successful progress
+    // Tags patch: every byte is sent; the file server now scans it before it answers,
+    // which can take longer than the stall timeout. Wait for the answer instead.
+    if (progress >= 100) {
+      upload.scanning = true;
+      this.clearProgressTimeout(upload.id);
+      return;
+    }
     // Reset the timeout whenever we get progress
     this.startProgressTimeout(upload);
   }

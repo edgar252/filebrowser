@@ -161,6 +161,23 @@ describe("upload stall detection", () => {
     expect(uploadManager.progressTimeouts.size).toBe(0);
   });
 
+  it("waits for the server's scan once every byte is sent instead of pausing", async () => {
+    const request = deferred();
+    resourcesApi.post.mockImplementationOnce((source, path, file, overwrite, onProgress) => {
+      onProgress(100);
+      return request.promise;
+    });
+    const upload = addUpload("pending");
+    const done = uploadManager.startFileUpload(upload);
+    expect(upload.scanning).toBe(true);
+    await vi.advanceTimersByTimeAsync(60000);
+    expect(upload.status).toBe("uploading");
+    expect(uploadManager.progressTimeouts.size).toBe(0);
+    request.resolve("");
+    await done;
+    expect(upload.status).toBe("completed");
+  });
+
   it("gives a resumed upload a fresh inactivity window", async () => {
     const upload = addUpload();
     uploadManager.startProgressTimeout(upload);

@@ -436,6 +436,7 @@
     "optionalPassword": "Optional password",
     "deleted": "Deleted successfully!",
     "conflictsDetected": "Conflicts detected",
+    "scanning": "Scanning for viruses…",
     "uploadMissing": "Upload only what's missing",
     "optionLabel": "{name}:",
     "uploadConflictTitle": "Files already exist",
