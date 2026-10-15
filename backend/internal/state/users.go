@@ -221,8 +221,9 @@ func CreateUser(user *users.User, plaintextPassword string) error {
 	if preserveRequirePasswordChange {
 		user.RequirePasswordChange = true
 	}
-	// Defaults fill in what the caller left out; keep the permissions it asked for.
-	user.Permissions = requestedPermissions
+	// Defaults fill in what the caller left out; keep only explicitly requested global permissions.
+	user.Permissions = users.MergeGlobalPermissionsOnCreate(user.Permissions, requestedPermissions, user.PermissionsFieldMask)
+	user.PermissionsFieldMask = users.GlobalPermissionsFieldMask{}
 	for i, scope := range user.BackendScopes {
 		if perms, ok := requestedScopePermissions[scope.Path]; ok {
 			user.BackendScopes[i].Permissions = perms
