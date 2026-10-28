@@ -4,7 +4,7 @@
       v-if="!disableNavButtons"
       class="nav-toggle-button"
       icon="close_back"
-      :label="$t('general.close')"
+      :label="goesHome ? 'Home' : $t('general.close')"
       :disabled="isDisabledMultiAction"
       @action="multiAction"
     />
@@ -153,10 +153,14 @@ export default {
       }
       return this.$t("buttons.switchView");
     },
+    // Tags: with the sidebar pinned the menu button had nothing to toggle (it was
+    // disabled); it takes you back to Tags' home page instead.
+    goesHome() {
+      return getters.isStickySidebar() && getters.multibuttonState() === "menu" && !getters.isShare();
+    },
     isDisabledMultiAction() {
-      const regularDisabled = getters.isStickySidebar() && getters.multibuttonState() === "menu";
       const shareDisabled = state.shareInfo?.disableSidebar && getters.multibuttonState() === "menu";
-      return this.isDisabled || regularDisabled || shareDisabled;
+      return this.isDisabled || shareDisabled;
     },
     showSwitchView() {
       return this.showHeaderSwitchView;
@@ -262,6 +266,10 @@ export default {
       this.performNavigation(cv);
     },
     performNavigation(cv) {
+      if (this.goesHome) {
+        window.location.href = "/";
+        return;
+      }
       if (cv === "listingView" || ( getters.isShare() && getters.multibuttonState() !== "close") || cv === "tools") {
         mutations.toggleSidebar();
       } else if (cv === "settings" && getters.isMobile()) {
